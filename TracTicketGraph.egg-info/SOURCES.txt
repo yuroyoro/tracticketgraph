@@ -1,0 +1,9 @@
+setup.py
+TracTicketGraph.egg-info/PKG-INFO
+TracTicketGraph.egg-info/SOURCES.txt
+TracTicketGraph.egg-info/dependency_links.txt
+TracTicketGraph.egg-info/entry_points.txt
+TracTicketGraph.egg-info/top_level.txt
+TracTicketGraph.egg-info/trac_plugin.txt
+ticketgraph/__init__.py
+ticketgraph/ticketgraph.py

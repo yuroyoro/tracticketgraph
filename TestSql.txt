@@ -1,0 +1,176 @@
+-- 指定日以前にNewのチケット
+SELECT count(*) New
+  FROM (
+        SELECT id
+          FROM ticket
+         WHERE time < strftime('%s','2008-03-24' ,'-1 day')
+       ) t 
+  LEFT OUTER JOIN 
+       (
+        SELECT tc1.id id, newvalue
+         FROM (
+               SELECT ticket id, time ,newvalue
+                 FROM ticket_change 
+                WHERE field='status' 
+                  AND time < strftime('%s','2008-03-24 23:59:59' ,'-1 day')
+               ORDER BY id
+              ) tc1 
+         JOIN (
+               SELECT ticket id, max(time) last_change_time,min(time) first_change_time
+                 FROM ticket_change 
+                WHERE field='status' 
+                  AND time < strftime('%s','2008-03-24 23:59:59' ,'-1 day')
+                GROUP BY id 
+                ORDER BY id
+              ) tc2
+          ON tc1.id = tc2.id AND tc1.time = tc2.last_change_time
+       ) tc ON t.id = tc.id 
+ WHERE tc.newvalue IS NULL OR tc.newvalue = 'new'
+
+-- 指定日以前にReopend ,Assigned,Closed数
+SELECT sum( Assigned) Assigned , sum( Reopened) Reopened ,sum( Closed) Closed 
+  FROM (
+        SELECT ticket id, date(time ,'unixepoch')tm ,time,
+               (CASE newvalue WHEN 'assigned' THEN 1 ELSE 0 END) Assigned,
+               (CASE newvalue WHEN 'reopened' THEN 1 ELSE 0 END) Reopened,
+               (CASE newvalue WHEN 'closed' THEN 1 ELSE 0 END) Closed
+          FROM ticket_change 
+         WHERE field='status' 
+           AND time <= strftime('%s','2008-03-24 23:59:59' ,'-1 day')
+        ORDER BY id
+       ) tc1 
+  JOIN (
+        SELECT ticket id, max(time) last_change_time,min(time) first_change_time
+          FROM ticket_change 
+         WHERE field='status' 
+           AND time <= strftime('%s','2008-03-24 23:59:59' ,'-1 day')
+         GROUP BY id 
+         ORDER BY id
+       ) tc2
+   ON tc1.id = tc2.id AND tc1.time = tc2.last_change_time
+
+--日別のNew
+SELECT ifnull( tc.tm , t.tm) dt, count(*) New
+  FROM (
+        SELECT date(time,'unixepoch') tm, id
+          FROM ticket
+         WHERE time <= strftime('%s','2008-04-25 23:59:59')
+       ) t 
+  LEFT OUTER JOIN 
+       (
+        SELECT tc1.id id ,tc1.tm tm, newvalue
+         FROM (
+               SELECT ticket id, date(time ,'unixepoch')tm ,time ,newvalue
+                 FROM ticket_change 
+                WHERE field='status' 
+                  AND time >= strftime('%s','2008-03-26') AND time <= strftime('%s','2008-04-25 23:59:59')
+              ) tc1 
+         JOIN (
+               SELECT ticket id, date(time ,'unixepoch')tm ,max(time) last_change_time,min(time) first_change_time
+                 FROM ticket_change 
+                WHERE field='status' 
+                  AND time >= strftime('%s','2008-03-26') AND time <= strftime('%s','2008-04-25 23:59:59')
+                GROUP BY tm , id 
+              ) tc2
+          ON tc1.id = tc2.id AND tc1.time = tc2.last_change_time
+       ) tc ON t.id = tc.id 
+ WHERE tc.newvalue IS NULL OR tc.newvalue = 'new'
+ GROUP BY dt
+ HAVING dt >= '2008-03-26'
+ ORDER BY dt  ASC
+ 
+--日別のReopend ,Assigned,Closed数
+SELECT tc1.tm , sum( Assigned) Assigned , sum( Reopened) Reopened ,sum( Closed) Closed 
+  FROM (
+        SELECT ticket id, date(time ,'unixepoch')tm ,time,
+               (CASE newvalue WHEN 'assigned' THEN 1 ELSE 0 END) Assigned,
+               (CASE newvalue WHEN 'reopened' THEN 1 ELSE 0 END) Reopened,
+               (CASE newvalue WHEN 'closed' THEN 1 ELSE 0 END) Closed
+          FROM ticket_change 
+         WHERE field='status' 
+           AND time >= strftime('%s','2008-03-24') AND time <= strftime('%s','2008-04-25 23:59:59')
+        ORDER BY tm , id
+       ) tc1 
+  JOIN (
+        SELECT ticket id, date(time ,'unixepoch')tm ,max(time) last_change_time,min(time) first_change_time
+          FROM ticket_change 
+         WHERE field='status' 
+           AND time >= strftime('%s','2008-03-24') AND time <= strftime('%s','2008-04-25 23:59:59')
+         GROUP BY tm , id 
+         ORDER BY tm , id
+       ) tc2
+   ON tc1.id = tc2.id AND tc1.time = tc2.last_change_time
+GROUP BY tc1.tm
+
+--日別のReopend ,Assigned,Closedの前日からの変化数
+SELECT date(t.time ,'unixepoch') tm ,
+       sum(Diff_New)      Diff_New,
+       sum(Diff_Assigned) Diff_Assigned,
+       sum(Diff_Reopened) Diff_Reopened,
+       sum(Diff_Closed)   Diff_Closed
+  FROM ticket t
+  JOIN (
+       (
+        SELECT tc1.id id,tc1.tm tm, oldvalue,
+               (CASE oldvalue WHEN 'new' THEN 1 ELSE 0 END)      Diff_New,
+               (CASE oldvalue WHEN 'assigned' THEN 1 ELSE 0 END) Diff_Assigned,
+               (CASE oldvalue WHEN 'reopened' THEN 1 ELSE 0 END) Diff_Reopened,
+               (CASE oldvalue WHEN 'closed' THEN 1 ELSE 0 END)   Diff_Closed
+         FROM (
+               SELECT ticket id, date(time ,'unixepoch')tm ,time ,oldvalue
+                 FROM ticket_change 
+                WHERE field='status' 
+                  AND time >= strftime('%s','2008-03-24') AND time <= strftime('%s','2008-04-25 23:59:59')
+               ORDER BY tm , id
+              ) tc1 
+         JOIN (
+               SELECT ticket id, date(time ,'unixepoch') tm ,max(time) last_change_time,min(time) first_change_time
+                 FROM ticket_change 
+                WHERE field='status' 
+                  AND time >= strftime('%s','2008-03-24') AND time <= strftime('%s','2008-04-25 23:59:59')
+                GROUP BY tm , id 
+                ORDER BY tm , id
+              ) tc2
+          ON tc1.id = tc2.id AND tc1.time = tc2.first_change_time
+       ) tc_first
+       JOIN 
+       (
+        SELECT tc3.id id,tc3.tm tm, newvalue
+         FROM (
+               SELECT ticket id, date(time ,'unixepoch')tm ,time ,newvalue
+                 FROM ticket_change 
+                WHERE field='status' 
+                  AND time >= strftime('%s','2008-03-24') AND time <= strftime('%s','2008-04-25 23:59:59')
+               ORDER BY tm , id
+              ) tc3 
+         JOIN (
+               SELECT ticket id, date(time ,'unixepoch')tm ,max(time) last_change_time,min(time) first_change_time
+                 FROM ticket_change 
+                WHERE field='status' 
+                  AND time >= strftime('%s','2008-03-24') AND time <= strftime('%s','2008-04-25 23:59:59')
+                GROUP BY tm , id 
+                ORDER BY tm , id
+              ) tc4
+          ON tc3.id = tc4.id AND tc3.time = tc4.last_change_time
+       ) tc_last 
+    ON tc_first.id = tc_last.id 
+   AND tc_first.tm = tc_last.tm 
+   AND tc_first.oldvalue <> tc_last.newvalue
+  ) tc
+ ON t.id = tc.id AND date(t.time ,'unixepoch') <> tc.tm
+GROUP by tm
+
+-- 日別に新規追加されたチケット
+SELECT date(time,'unixepoch') tm, count(*) as Count
+  FROM ticket
+ WHERE time >= strftime('%s','2008-03-24') AND time <= strftime('%s','2008-04-23 23:59:59')
+ GROUP BY tm
+ ORDER BY tm ASC
+
+-- 日別のclosed回数
+SELECT date(time,'unixepoch') AS Closed, count(*) AS Count 
+ FROM ticket_change 
+WHERE field = 'status' AND newvalue = 'closed' 
+  AND time >= strftime('%s','now','-30 day') 
+GROUP BY Closed
+ORDER BY Closed ASC

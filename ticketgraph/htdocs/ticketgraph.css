@@ -1,0 +1,145 @@
+div#ticket-graph-main{
+    width :910px;
+    left:0px;
+}
+
+div#input-form{
+    min-height:20px;
+	_height: 20px;
+}
+
+.ticket-graph{
+	width :900px;
+    left  :10px;
+    margin-top : 0px;
+}
+
+.ticket-graph h2 {
+    left : 10px;
+    border-bottom: 1px solid #d7d7d7;
+    margin: 30px 5px 15px 5px;
+    color: #333333;
+}
+div.chart{
+    min-height:700px;
+	_height: 700px;
+
+}
+div.chart_div{
+	width:700px;
+	height:470px;
+	margin-bottom : 20px;
+}
+
+.data-table{
+    margin-top: 0px;
+    margin-bottom : 20px;
+}
+
+.data-table table {
+    width: 896px;
+    background-color: #CCC;
+    font-size: 0.85em;
+    text-align: center;
+    margin-top: 0px;
+    margin-bottom: 2px;
+}
+
+.data-table td.header-date{
+    color: white;
+    width :60px;
+    padding: 2px 2px;
+    background-color: #333333;
+}
+.data-table td.header-total{
+    color: white;
+    width :60px;
+    padding: 2px 2px;
+    background-color: #666666;
+}
+.data-table td.header-opened{
+    color: white;
+    width :60px;
+    padding: 2px 2px;
+    background-color: #70bcf8;
+}
+.data-table td.header-added{
+    color: white;
+    width :60px;
+    padding: 2px 2px;
+    background-color: #F0807F;
+}
+.data-table td.header-new{
+    color: white;
+    width :60px;
+    padding: 2px 2px;
+    background-color: #F0807F;
+}
+.data-table td.header-assigned{
+    color: white;
+    width :60px;
+    padding: 2px 2px;
+    background-color: #99EE99;
+}
+.data-table td.header-reopened{
+    color: white;
+    width :60px;
+    padding: 2px 2px;
+    background-color: #fce520;
+}
+.data-table td.header-closed{
+    color: white;
+    width :60px;
+    padding: 2px 2px;
+    background-color: #FF8000;
+}
+
+.data-table td.col-date{
+	font-size: 0.75em;
+    width:50px;
+    background-color: #333333;
+    color: #FFFFFF;
+    padding: 2px 2px;
+}
+.data-table td.col-total{
+	white-space: nowrap;
+    width:50px;
+    background-color: #FFFFFF;
+    color: #666666;
+}
+.data-table td.col-opened{
+	white-space: nowrap;
+	width:50px;
+    background-color: #FFFFFF;
+    color: #70bcf8;
+}
+.data-table td.col-added{
+	white-space: nowrap;
+	width:50px;
+    background-color: #FFFFFF;
+    color: #F0807F;
+}
+.data-table td.col-new{
+	white-space: nowrap;
+	width:50px;
+    background-color: #FFFFFF;
+    color: #F0807F;
+}
+.data-table td.col-assigned{
+	white-space: nowrap;
+	width:50px;
+    background-color: #FFFFFF;
+    color: #99EE99;
+}
+.data-table td.col-reopened{
+	white-space: nowrap;
+	width:50px;
+    background-color: #FFFFFF;
+    color: #fce520;
+}
+.data-table td.col-closed{
+	white-space: nowrap;
+	width:50px;
+    background-color: #FFFFFF;
+    color: #FF8000;
+}
